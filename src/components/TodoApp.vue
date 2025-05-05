@@ -86,6 +86,26 @@ const cancelEdit = () => {
 const totalPrice = computed(() => {
   return items.value.reduce((sum, item) => sum + (item.price || 0), 0);
 });
+
+// Tambahkan local storage functionality
+onMounted(() => {
+  const saved = localStorage.getItem("shopping-items");
+  if (saved) {
+    try {
+      items.value = JSON.parse(saved);
+    } catch (e) {
+      console.error("Failed to parse saved data:", e);
+    }
+  }
+});
+
+watch(
+  items,
+  (newVal) => {
+    localStorage.setItem("shopping-items", JSON.stringify(newVal));
+  },
+  { deep: true }
+);
 </script>
 
 <template>
