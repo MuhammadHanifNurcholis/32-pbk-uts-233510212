@@ -1,11 +1,15 @@
 <script setup>
-import { ref } from "vue";
+import { ref, computed, watch, onMounted } from "vue";
 
 const newItem = ref("");
 const newPrice = ref(0);
 const items = ref([]);
+const showOnlyUnpurchased = ref(false);
+const sortOption = ref("name");
+const editingIndex = ref(null);
+const editingText = ref("");
+const editingPrice = ref(0);
 
-// Tambahkan fungsi addItem
 const addItem = () => {
   const name = newItem.value.trim();
   const price = parseFloat(newPrice.value);
@@ -22,32 +26,6 @@ const addItem = () => {
   newItem.value = "";
   newPrice.value = 0;
 };
-
-// Tambahkan computed properties untuk sorting dan filtering
-const showOnlyUnpurchased = ref(false);
-const sortOption = ref("name");
-
-const sortedItems = computed(() => {
-  const sorted = [...items.value];
-  switch (sortOption.value) {
-    case "price-asc":
-      return sorted.sort((a, b) => a.price - b.price);
-    case "price-desc":
-      return sorted.sort((a, b) => b.price - a.price);
-    default:
-      return sorted.sort((a, b) => a.text.localeCompare(b.text));
-  }
-});
-
-const filteredItems = computed(() => {
-  return showOnlyUnpurchased.value
-    ? sortedItems.value.filter((item) => !item.purchased)
-    : sortedItems.value;
-});
-// Tambahkan fungsi untuk edit dan delete
-const editingIndex = ref(null);
-const editingText = ref("");
-const editingPrice = ref(0);
 
 const removeItem = (index) => {
   items.value.splice(index, 1);
@@ -82,12 +60,28 @@ const cancelEdit = () => {
   editingPrice.value = 0;
 };
 
-// Tambahkan computed total price
+const sortedItems = computed(() => {
+  const sorted = [...items.value];
+  switch (sortOption.value) {
+    case "price-asc":
+      return sorted.sort((a, b) => a.price - b.price);
+    case "price-desc":
+      return sorted.sort((a, b) => b.price - a.price);
+    default:
+      return sorted.sort((a, b) => a.text.localeCompare(b.text));
+  }
+});
+
+const filteredItems = computed(() => {
+  return showOnlyUnpurchased.value
+    ? sortedItems.value.filter((item) => !item.purchased)
+    : sortedItems.value;
+});
+
 const totalPrice = computed(() => {
   return items.value.reduce((sum, item) => sum + (item.price || 0), 0);
 });
 
-// Tambahkan local storage functionality
 onMounted(() => {
   const saved = localStorage.getItem("shopping-items");
   if (saved) {
@@ -112,82 +106,86 @@ watch(
   <div class="app-background">
     <div class="app-container">
       <h1 class="title">🛒 Daftar Belanja Pribadi</h1>
+
+      <div class="form-section">
+        <input
+          v-model="newItem"
+          @keyup.enter="addItem"
+          placeholder="Nama barang..."
+          class="input-task"
+        />
+        <input
+          v-model.number="newPrice"
+          type="number"
+          placeholder="Harga"
+          class="input-price"
+        />
+        <button @click="addItem" class="btn btn-add">➕ Tambah</button>
+      </div>
+
+      <div class="filter-section">
+        <label class="filter-label">
+          <input type="checkbox" v-model="showOnlyUnpurchased" />
+          Tampilkan hanya yang belum dibeli
+        </label>
+        <select v-model="sortOption" class="input-task" style="max-width: 200px">
+          <option value="name">Urutkan: Nama</option>
+          <option value="price-asc">Harga Termurah</option>
+          <option value="price-desc">Harga Termahal</option>
+        </select>
+      </div>
+
+      <div class="task-list-wrapper">
+        <ul class="task-list">
+          <li
+            v-for="(item, index) in filteredItems"
+            :key="index"
+            class="task-item"
+          >
+            <div class="task-label">
+              <input type="checkbox" v-model="item.purchased" />
+              <template v-if="editingIndex === index">
+                <input
+                  v-model="editingText"
+                  class="edit-input"
+                  @keyup.enter="saveItem(index)"
+                  @blur="saveItem(index)"
+                />
+                <input
+                  v-model.number="editingPrice"
+                  type="number"
+                  class="edit-input"
+                  placeholder="Harga"
+                />
+              </template>
+              <template v-else>
+                <span :class="{ completed: item.purchased }">{{
+                  item.text
+                }}</span>
+                <span class="price">Rp {{ item.price.toLocaleString() }}</span>
+              </template>
+            </div>
+            <div class="task-actions">
+              <template v-if="editingIndex === index">
+                <button @click="saveItem(index)" class="btn btn-save">💾</button>
+                <button @click="cancelEdit" class="btn btn-cancel">✖</button>
+              </template>
+              <template v-else>
+                <button @click="editItem(index)" class="btn btn-edit">✏️</button>
+                <button @click="removeItem(index)" class="btn btn-remove">🗑</button>
+              </template>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="total-section">
+        Total: <span>Rp {{ totalPrice.toLocaleString() }}</span
+        ><br />
+        Jumlah Barang: <span>{{ items.length }}</span>
+      </div>
     </div>
   </div>
-
-  <!-- Tambahkan form input -->
-<div class="form-section">
-  <input
-    v-model="newItem"
-    @keyup.enter="addItem"
-    placeholder="Nama barang..."
-    class="input-task"
-  />
-  <input
-    v-model.number="newPrice"
-    type="number"
-    placeholder="Harga"
-    class="input-price"
-  />
-  <button @click="addItem" class="btn btn-add">➕ Tambah</button>
-</div>
-<!-- Tambahkan list item -->
-<div class="task-list-wrapper">
-  <ul class="task-list">
-    <li v-for="(item, index) in filteredItems" :key="index" class="task-item">
-      <div class="task-label">
-        <input type="checkbox" v-model="item.purchased" />
-        <span :class="{ completed: item.purchased }">{{ item.text }}</span>
-        <span class="price">Rp {{ item.price.toLocaleString() }}</span>
-      </div>
-    </li>
-  </ul>
-</div>
-<!-- Update template untuk edit/delete -->
-<template v-if="editingIndex === index">
-  <input
-    v-model="editingText"
-    class="edit-input"
-    @keyup.enter="saveItem(index)"
-    @blur="saveItem(index)"
-  />
-  <input
-    v-model.number="editingPrice"
-    type="number"
-    class="edit-input"
-    placeholder="Harga"
-  />
-</template>
-
-<div class="task-actions">
-  <template v-if="editingIndex === index">
-    <button @click="saveItem(index)" class="btn btn-save">💾</button>
-    <button @click="cancelEdit" class="btn btn-cancel">✖</button>
-  </template>
-  <template v-else>
-    <button @click="editItem(index)" class="btn btn-edit">✏️</button>
-    <button @click="removeItem(index)" class="btn btn-remove">🗑</button>
-  </template>
-</div>
-<!-- Tambahkan filter controls -->
-<div class="filter-section">
-  <label class="filter-label">
-    <input type="checkbox" v-model="showOnlyUnpurchased" />
-    Tampilkan hanya yang belum dibeli
-  </label>
-  <select v-model="sortOption" class="input-task" style="max-width: 200px">
-    <option value="name">Urutkan: Nama</option>
-    <option value="price-asc">Harga Termurah</option>
-    <option value="price-desc">Harga Termahal</option>
-  </select>
-</div>
-
-<!-- Tambahkan total section -->
-<div class="total-section">
-  Total: <span>Rp {{ totalPrice.toLocaleString() }}</span><br />
-  Jumlah Barang: <span>{{ items.length }}</span>
-</div>
-
 </template>
 
 <style>
@@ -243,6 +241,7 @@ body {
   overflow: hidden;
 }
 
+/* 4. COMPONENT STYLES */
 .title {
   text-align: center;
   font-size: 1.75rem;
@@ -256,12 +255,6 @@ body {
   flex-direction: column;
   gap: 0.5rem;
   margin-bottom: 1rem;
-}
-
-@media (min-width: 500px) {
-  .form-section {
-    flex-direction: row;
-  }
 }
 
 .input-task,
@@ -341,20 +334,6 @@ body {
   align-items: center;
 }
 
-@media (min-width: 500px) {
-  .filter-section {
-    flex-direction: row;
-    justify-content: space-between;
-  }
-}
-
-.filter-label {
-  font-size: 0.95rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
 .task-list-wrapper {
   flex: 1;
   overflow-y: auto;
@@ -384,13 +363,6 @@ body {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-@media (min-width: 500px) {
-  .task-item {
-    flex-direction: row;
-    align-items: center;
-  }
-}
-
 .task-label {
   display: flex;
   align-items: center;
@@ -403,21 +375,6 @@ body {
   display: flex;
   gap: 0.5rem;
   margin-top: 0.5rem;
-}
-
-@media (min-width: 500px) {
-  .task-actions {
-    margin-top: 0;
-  }
-}
-
-.task-item input[type="checkbox"] {
-  transform: scale(1.2);
-}
-
-.task-item span {
-  font-size: 1rem;
-  flex: 1;
 }
 
 .edit-input {
@@ -450,4 +407,23 @@ body {
   color: var(--text-color);
 }
 
+@media (min-width: 500px) {
+  .form-section {
+    flex-direction: row;
+  }
+  
+  .filter-section {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+  
+  .task-item {
+    flex-direction: row;
+    align-items: center;
+  }
+  
+  .task-actions {
+    margin-top: 0;
+  }
+}
 </style>
