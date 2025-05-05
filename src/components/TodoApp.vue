@@ -191,4 +191,263 @@ watch(
 </template>
 
 <style>
+:root {
+  --primary-color: #10b981;
+  --primary-hover: #059669;
+  --danger-color: #ef4444;
+  --danger-hover: #dc2626;
+  --bg-color: #f3f4f6;
+  --card-color: #ffffff;
+  --text-color: #1f2937;
+  --completed-color: red;
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: "Inter", sans-serif;
+  color: var(--text-color);
+  overflow: hidden;
+  background-color: var(--bg-color);
+}
+
+#app {
+  height: 100%;
+}
+
+.app-background {
+  height: 100vh;
+  width: 100vw;
+  background: linear-gradient(135deg, #34d399, #059669);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+.app-container {
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  background-color: var(--card-color);
+  border-radius: 1rem;
+  box-shadow: var(--shadow);
+  padding: 1.5rem;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.title {
+  text-align: center;
+  font-size: 1.75rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  color: var(--primary-color);
+}
+
+.form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+@media (min-width: 500px) {
+  .form-section {
+    flex-direction: row;
+  }
+}
+
+.input-task,
+.input-price {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.75rem;
+  font-size: 1rem;
+}
+
+.input-price {
+  max-width: 150px;
+}
+
+.btn {
+  padding: 0.5rem 0.75rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  font-size: 1rem;
+}
+
+.btn-add {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.btn-add:hover {
+  background-color: var(--primary-hover);
+}
+
+.btn-remove {
+  background-color: var(--danger-color);
+  color: white;
+}
+
+.btn-remove:hover {
+  background-color: var(--danger-hover);
+}
+
+.btn-edit {
+  background-color: #f59e0b;
+  color: white;
+}
+
+.btn-edit:hover {
+  background-color: #d97706;
+}
+
+.btn-save {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.btn-save:hover {
+  background-color: #2563eb;
+}
+
+.btn-cancel {
+  background-color: #6b7280;
+  color: white;
+}
+
+.btn-cancel:hover {
+  background-color: #4b5563;
+}
+
+.filter-section {
+  text-align: center;
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+@media (min-width: 500px) {
+  .filter-section {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+}
+
+.filter-label {
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.task-list-wrapper {
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.task-list-wrapper::-webkit-scrollbar {
+  display: none;
+}
+
+.task-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.task-item {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.5rem;
+  background-color: #f9fafb;
+  border-radius: 0.75rem;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+@media (min-width: 500px) {
+  .task-item {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+.task-label {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  flex-wrap: wrap;
+}
+
+.task-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+@media (min-width: 500px) {
+  .task-actions {
+    margin-top: 0;
+  }
+}
+
+.task-item input[type="checkbox"] {
+  transform: scale(1.2);
+}
+
+.task-item span {
+  font-size: 1rem;
+  flex: 1;
+}
+
+.edit-input {
+  flex: 1;
+  padding: 0.5rem;
+  font-size: 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid #d1d5db;
+  min-width: 100px;
+}
+
+.price {
+  font-size: 0.95rem;
+  color: #374151;
+  margin-left: 1rem;
+}
+
+.completed {
+  text-decoration: line-through;
+  color: var(--completed-color);
+}
+
+.total-section {
+  text-align: right;
+  font-size: 1.1rem;
+  font-weight: bold;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+  margin-top: 1rem;
+  color: var(--text-color);
+}
+
 </style>
