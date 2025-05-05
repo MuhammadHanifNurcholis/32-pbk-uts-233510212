@@ -44,6 +44,43 @@ const filteredItems = computed(() => {
     ? sortedItems.value.filter((item) => !item.purchased)
     : sortedItems.value;
 });
+// Tambahkan fungsi untuk edit dan delete
+const editingIndex = ref(null);
+const editingText = ref("");
+const editingPrice = ref(0);
+
+const removeItem = (index) => {
+  items.value.splice(index, 1);
+  if (editingIndex.value === index) cancelEdit();
+};
+
+const editItem = (index) => {
+  editingIndex.value = index;
+  editingText.value = items.value[index].text;
+  editingPrice.value = items.value[index].price;
+};
+
+const saveItem = (index) => {
+  const name = editingText.value.trim();
+  const price = parseFloat(editingPrice.value);
+  if (!name) {
+    alert("Nama tidak boleh kosong.");
+    return;
+  }
+  if (isNaN(price) || price <= 0) {
+    alert("Harga tidak valid.");
+    return;
+  }
+  items.value[index].text = name;
+  items.value[index].price = price;
+  cancelEdit();
+};
+
+const cancelEdit = () => {
+  editingIndex.value = null;
+  editingText.value = "";
+  editingPrice.value = 0;
+};
 </script>
 
 <template>
@@ -80,6 +117,32 @@ const filteredItems = computed(() => {
       </div>
     </li>
   </ul>
+</div>
+<!-- Update template untuk edit/delete -->
+<template v-if="editingIndex === index">
+  <input
+    v-model="editingText"
+    class="edit-input"
+    @keyup.enter="saveItem(index)"
+    @blur="saveItem(index)"
+  />
+  <input
+    v-model.number="editingPrice"
+    type="number"
+    class="edit-input"
+    placeholder="Harga"
+  />
+</template>
+
+<div class="task-actions">
+  <template v-if="editingIndex === index">
+    <button @click="saveItem(index)" class="btn btn-save">💾</button>
+    <button @click="cancelEdit" class="btn btn-cancel">✖</button>
+  </template>
+  <template v-else>
+    <button @click="editItem(index)" class="btn btn-edit">✏️</button>
+    <button @click="removeItem(index)" class="btn btn-remove">🗑</button>
+  </template>
 </div>
 </template>
 
