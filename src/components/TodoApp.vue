@@ -81,6 +81,11 @@ const cancelEdit = () => {
   editingText.value = "";
   editingPrice.value = 0;
 };
+
+// Tambahkan computed total price
+const totalPrice = computed(() => {
+  return items.value.reduce((sum, item) => sum + (item.price || 0), 0);
+});
 </script>
 
 <template>
@@ -144,6 +149,25 @@ const cancelEdit = () => {
     <button @click="removeItem(index)" class="btn btn-remove">🗑</button>
   </template>
 </div>
+<!-- Tambahkan filter controls -->
+<div class="filter-section">
+  <label class="filter-label">
+    <input type="checkbox" v-model="showOnlyUnpurchased" />
+    Tampilkan hanya yang belum dibeli
+  </label>
+  <select v-model="sortOption" class="input-task" style="max-width: 200px">
+    <option value="name">Urutkan: Nama</option>
+    <option value="price-asc">Harga Termurah</option>
+    <option value="price-desc">Harga Termahal</option>
+  </select>
+</div>
+
+<!-- Tambahkan total section -->
+<div class="total-section">
+  Total: <span>Rp {{ totalPrice.toLocaleString() }}</span><br />
+  Jumlah Barang: <span>{{ items.length }}</span>
+</div>
+
 </template>
 
 <style>
